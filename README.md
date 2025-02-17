@@ -8,5 +8,5 @@ Thanks for visiting this repo. Here's a breakdown of the contents:
     -   `multiple-params-vs-map.vm` shows two approaches to passing parameters to macros
     -   `serializer-json-output.json` sample output for reference
 -   Downloads
-    -   Slide deck PDF with speaker's notes
-    -   Site archive of example project (Cascade CMS 8.26 compatible)
+    -   [Slide deck PDF](https://github.com/wjoell/cuc25-create-your-own-datalayer/blob/main/downloads/CUC25_Create_Your_Own_Datalayer.pdf) with speaker's notes
+    -   [Site archive](https://github.com/wjoell/cuc25-create-your-own-datalayer/blob/main/downloads/CUC2025-Datalayer.csse) of example project (Cascade CMS 8.26 compatible)
