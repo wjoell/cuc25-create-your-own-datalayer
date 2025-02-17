@@ -1,0 +1,133 @@
+#set($myMap = {})
+
+## or initialize with values
+#set($myMap = {
+    "key1" : "value1",
+    "key2" : "value2",
+    "key3" : "value3"
+})
+
+## use temp var to suppress output from put method
+#set($_void = $myMap.put("key1", "value1"))
+
+## alternative dot syntax
+#set($myMap.key2 = "value2")
+
+## alternative bracket syntax
+#set($myMap["key3"] = "value3")
+
+## access values
+$myMap.get("key1")
+
+## alternative dot syntax
+$myMap.key2
+
+## alternative bracket syntax
+$myMap["key3"]
+
+## default value if key is missing
+$myMap.getOrDefault("key5", "defaultValue")
+
+## remove key
+#set($_void = $myMap.remove("key1"))
+
+## check if key exists before setting
+#set($_void = $myMap.putIfAbsent("key1", "newValue1"))
+
+## check if key exists
+$myMap.containsKey("key1")
+
+## check if value exists
+$myMap.containsValue("value1")
+
+## get all keys
+$myMap.keySet()
+
+## get all values
+$myMap.values()
+
+## get all entries
+$myMap.entrySet()
+
+## Values can be a variety of types such as booleans, numbers, strings, lists, and maps
+#set($myMap = {
+    "key1" : true,
+    "key2" : "value2",
+    "key3" : 3,
+    "key4" : [1, 2, 3],
+    "key5" : {
+        "nestedKey1" : "nestedValue1",
+        "nestedKey2" : "nestedValue2"
+    }
+})
+
+## serialize to JSON
+$_SerializerTool.toJson($myMap)
+
+## additional methods
+
+## clear all entries
+#set($_void = $myMap.clear())
+
+## check if map is empty
+$myMap.isEmpty()
+
+## get size of map
+$myMap.size()
+
+## shallow copy with putAll
+#set($myMap2 = {})
+#set($_void = $myMap2.putAll($myMap))
+
+## deep copy with deepCopyMap
+#set($myMap3 = {})
+#deepCopyMap($myMap $myMap3)
+
+## compare maps using hashCode
+$myMap.hashCode() , $myMap2.hashCode() ## equal, shallow copy references same objects
+$myMap.hashCode() , $myMap3.hashCode() ## not equal, deep copy creates new objects
+
+
+## Deep copy utilities
+#*
+    deepCopyMap and deepCopyList are recursive
+    macros that work together to process deeply 
+    nested maps that may contain lists and maps.
+*#
+#***
+    @param $sourceMap :: Map
+    @param $targetMap :: empty Map
+    *#
+#macro(deepCopyMap $sourceMap $targetMap)
+#foreach($entry in $sourceMap.entrySet())
+#if($_PropertyTool.isMap($entry.value))
+#set($nestedMap = {})
+#deepCopyMap($entry.value $nestedMap)
+#set( $_void = $targetMap.put($entry.key, $nestedMap) )
+#elseif($_PropertyTool.isList($entry.value))
+#set($nestedList = [])
+#deepCopyList($entry.value, $nestedList)
+#else
+#set( $_void = $targetMap.put($entry.key, $entry.value) )
+#end
+#end
+#end
+
+#***
+    @param $sourceList :: List
+    @param $targetList :: empty List
+    *#
+#macro(deepCopyList $sourceList $targetList)
+#foreach($item in $sourceList)
+#if($_PropertyTool.isMap($item))
+#set($nestedMap = {})
+#deepCopyMap($item $nestedMap)
+#set( $_void = $targetList.add($nestedMap) )
+#elseif($_PropertyTool.isList($item))
+#set($nestedList = [])
+#deepCopyList($item $nestedList)
+#else
+#set( $_void = $targetList.add($item) )
+#end
+#end
+#end
