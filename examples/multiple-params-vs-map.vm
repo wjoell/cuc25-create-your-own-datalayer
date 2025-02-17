@@ -1,0 +1,43 @@
+#***
+    @param $collection :: nodeset
+    *#
+#macro processCollectionWithParams($collection)
+<div class="collection">
+    #foreach($item in $collection)
+        ## reset parameters
+        #set($parameter1 = "")
+        #set($parameter2 = "")
+        #set($parameter3 = "")
+        #set($parameter4 = "")
+        #set($parameter1 = $item.getChild("field1").value)
+        #set($parameter2 = $item.getChild("field2").value)
+        #set($parameter3 = $item.getChild("field3").value)
+        #set($parameter4 = $item.getChild("field4").value)
+        #processNode($parameter1 $parameter2 $parameter3 $parameter4)
+            ##do something with parameters
+            ##macro signature is rigidly defined
+        #end
+    #end
+</div>
+#end
+
+
+#***
+    @param $collection :: nodeset
+    *#
+#macro processCollectionWithMap($collection)
+<div class="collection">
+    #foreach($item in $collection)
+        ## reset parameters map
+        #set($parameters = {})
+        #set($parameters.parameter1 = $item.getChild("field1").value)
+        #set($parameters.parameter2 = $item.getChild("field2").value)
+        #set($parameters.parameter3 = $item.getChild("field3").value)
+        #set($parameters.parameter4 = $item.getChild("field4").value)
+        #processNode($parameters)
+            ##do something with parameters map
+            ##macro signature is flexible
+        #end
+    #end
+</div>
+#end

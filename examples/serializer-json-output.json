@@ -1,0 +1,60 @@
+{
+    "title": "Example with Multiple Groups",
+    "contentGroups": [
+        {
+            "type": "text",
+            "active": true,
+            "textContent": "<p class=\"some-class\">In this example, we have more than one accordion group and some duplicate panel headings. We'll look at the velocity code that ensures unique IDs result even if duplicate headings exist.</p>"
+        },
+        {
+            "type": "text",
+            "active": false,
+            "textContent": "<h2>This is a Level 2 Heading in the Content</h2>\n<p>And some copy before we get to the related accordion group for this section...</p>"
+        },
+        {
+            "type": "accordion",
+            "active": true,
+            "groupAccordion": {
+                "groupHeading": "Accordiong Group Heading Example",
+                "panelHeadingLevel": "h2",
+                "panels": [
+                    {
+                        "heading": "Visit the GitHub Repo",
+                        "panelBody": "Clone or download <a href=\"https://github.com/wjoell/accessible-accordions-csuc2023\">the repository</a> for this project.",
+                        "status": "true"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "accordion",
+            "active": true,
+            "groupAccordion": {
+                "groupHeading": false,
+                "panelHeadingLevel": "h3",
+                "panels": [
+                    {
+                        "heading": "Visit the <em>GitHub</em> Repo",
+                        "panelBody": "<p>Clone or download <a href=\"https://github.com/wjoell/accessible-accordions-csuc2023\">the repository</a> for this project.</p>",
+                        "status": "true"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "accordion",
+            "active": true,
+            "groupAccordion": {
+                "groupHeading": "Lorem Ipsums",
+                "panelHeadingLevel": "h2",
+                "panels": [
+                    {
+                        "heading": "Veggie Ipsum",
+                        "panelBody": "<p>Veggies es bonus vobis, proinde vos postulo essum magis kohlrabi welsh onion daikon amaranth tatsoi tomatillo melon azuki bean garlic.</p>\n<p>Gumbo beet greens corn soko endive gumbo gourd. Parsley shallot courgette tatsoi pea sprouts fava bean collard greens dandelion okra wakame tomato. Dandelion cucumber earthnut pea peanut soko zucchini.</p>",
+                        "status": "true"
+                    }
+                ]
+            }
+        }
+    ]
+}
