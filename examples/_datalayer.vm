@@ -1,0 +1,164 @@
+## Set up datalayer
+#set ( $dl = {} )
+## Metadata wired and dynamic fields
+#set ( $dl.meta = {} )
+#set ( $dl.meta.title = $currentPage.metadata.title )
+#set ( $dl.meta.simpleText = $currentPage.metadata.getDynamicField("simple-text").value )
+#set ( $dl.meta.date = {} )
+#set ( $dl.meta.date.utc = $currentPage.metadata.getDynamicField("date").value )
+#set ( $dl.meta.date.default = $_DateTool.format("DEFAULT", $_DateTool.getDate($dl.meta.date.utc)) )
+#set ( $dl.meta.date.long = $_DateTool.format("LONG", $_DateTool.getDate($dl.meta.date.utc)) )
+#set ( $dl.meta.date.short = $_DateTool.format("SHORT", $_DateTool.getDate($dl.meta.date.utc)) )
+#set ( $dl.meta.date.medium = $_DateTool.format("MEDIUM", $_DateTool.getDate($dl.meta.date.utc)) )
+#set ( $dl.meta.date.full = $_DateTool.format("FULL", $_DateTool.getDate($dl.meta.date.utc)) )
+#set ( $dl.meta.multiCheck = {} )
+#set ( $dl.meta.multiCheck.checked = $_ListTool.toList($currentPage.metadata.getDynamicField("multi-check").values) )
+#set ( $dl.meta.multiCheck.possible = [] )
+#foreach ( $item in $currentPage.metadata.getDynamicField("multi-check").getPossibleFieldItems() )
+    #set( $_void = $dl.meta.multiCheck.possible.add($item.value) ) 
+#end
+## $dl.meta
+#if ( $currentPage.getStructuredDataNode("page-heading-source").value == "html" && !$_PropertyTool.isEmpty($currentPage.getStructuredDataNode("page-heading-html").value) )
+    #set( $dl.pageHeading = $currentPage.getStructuredDataNode("page-heading-html").value )
+#else
+    #set( $dl.pageHeading = $dl.meta.title )
+#end
+## Structured data
+#set ( $dl.contentGroups = [] )
+#foreach ( $group in $currentPage.getStructuredDataNodes("group-content") )
+    #set ( $content = {} )
+    #set ( $content.active = $group.getChild("boolean-visibility").value == "true" )
+    #set ( $content.type = $group.getChild("select-content-type").value )
+    #if ( $content.type == "text" )
+        #set ( $content.textContent = $group.getChild('text-content').value )
+    #elseif ( $content.type == "accordion" )
+        #set ( $content.groupAccordion = {} )
+        #if ( $group.getChild("group-accordion").getChild("boolean-acc-group-heading").value == "true"
+            && !$_PropertyTool.isEmpty($group.getChild("group-accordion").getChild("acc-group-heading").value))
+            #set ( $content.groupAccordion.groupHeading = $group.getChild("group-accordion").getChild("acc-group-heading").value )
+            #set ( $content.groupAccordion.panelHeadingLevel = "h3" )
+        #else
+            #set ( $content.groupAccordion.groupHeading = false )## booleans are easier to test for
+            #set ( $content.groupAccordion.panelHeadingLevel = $group.getChild("group-accordion").getChild("panel-hdg-override").value )
+        #end
+        #set ( $content.groupAccordion.panels = [] )
+        #foreach ( $panel in $group.getChild("group-accordion").getChildren("group-acc-panel") )
+            #set ( $panelMap = {} )
+            #if ( $panel.getChild("status").value != "off" )
+            #set ( $panelMap.status = $panel.getChild("status").value )## "true" | "false" for aria-expanded
+            #else
+            #set ( $panelMap.status = false )## boolean false = skip
+            #end
+            #if ( $_PropertyTool.isNotEmpty($panel.getChild("panel-heading").value) )
+            #set ( $panelMap.heading = $panel.getChild("panel-heading").value )
+            #else
+            #set ( $panelMap.heading = false )
+            #end
+            #if ( $_PropertyTool.isNotEmpty($panel.getChild("panel-body").value ) )
+            #set ( $panelMap.panelBody = $panel.getChild("panel-body").value  )
+            #else
+            #set ( $panelMap.panelBody = false )
+            #end
+            #set ( $_temp = $content.groupAccordion.panels.add($panelMap) )
+        #end
+    #elseif ( $content.type == "json-gallery" )
+        #if ( $group.getChild("json-gallery").getChild("sample-img").asset )
+            #set ( $content.gallery = {} )
+            #set ( $content.gallery.id = $group.getChild("json-gallery").getChild("sample-img").asset.parentFolder.assetId )
+            #set ( $content.gallery.link = $group.getChild("json-gallery").getChild("sample-img").asset.parentFolder.link )
+            #set ( $content.gallery.path = $group.getChild("json-gallery").getChild("sample-img").asset.parentFolder.path )
+            #set ( $content.gallery.displayType = $group.getChild("json-gallery").getChild("display-type").value )
+            #set ( $content.gallery.controls = $group.getChild("json-gallery").getChild("controls").value )
+            #set ( $content.gallery.aspectRatio = $group.getChild("json-gallery").getChild("aspect-ratio").value )
+            #set ( $content.gallery.imgFit = $group.getChild("json-gallery").getChild("img-fit").value )
+            #set ( $content.gallery.captions = $group.getChild("json-gallery").getChild("img-captions").value )
+            #set ( $content.gallery.allowFullscreen = $group.getChild("json-gallery").getChild("allow-fullscreen").value )
+            #set ( $content.gallery.cdn = {} )
+            #set ( $content.gallery.cdn.base = $group.getChild("json-gallery").getChild("cdn-path").value )
+            #set ( $content.gallery.cdn.directory = $group.getChild("json-gallery").getChild("cdn-directory").value )
+            #set ( $content.gallery.assetIds = [] )
+            #foreach ( $item in $group.getChild("json-gallery").getChild("sample-img").asset.parentFolder.children )
+                #if ( $item.assetType == "file" && $item.name.endsWith(".jpg") )
+                   #set ( $_void = $content.gallery.assetIds.add($item.name.replaceAll("\.jpg$", "")) ) 
+                #end
+            #end
+            #set ( $content.gallery.assets = {} )
+            #foreach ( $id in $content.gallery.assetIds )
+                #set ( $fileObject = $_.locateFile("/${content.gallery.path}/${id}.jpg", "CUC2025-Datalayer") )
+                ## $_PropertyTool.outputProperties($fileObject)
+                #set ( $content.gallery.assets[$id] = {} )
+                #set ( $content.gallery.assets[$id]['type'] = "image" )
+                #set ( $content.gallery.assets[$id]['thumbnail'] = {
+                    "avif": "${content.gallery.link}/${id}.avif",
+                    "webp": "${content.gallery.link}/${id}.webp",
+                    "jpg": "${content.gallery.link}/${id}.jpg"
+                })
+                #set ( $content.gallery.assets[$id]['inlineFormats'] = {
+                    "avif": "${content.gallery.cdn.base}t_auto_lg/${content.gallery.cdn.directory}/${id}.avif 992w, ${content.gallery.cdn.base}t_auto_hd/${content.gallery.cdn.directory}/${id}.avif 1920w",
+                    "webp": "${content.gallery.cdn.base}t_auto_lg/${content.gallery.cdn.directory}/${id}.webp 992w, ${content.gallery.cdn.base}t_auto_hd/${content.gallery.cdn.directory}/${id}.webp 1920w",
+                    "jpg": "${content.gallery.cdn.base}t_auto_lg/${content.gallery.cdn.directory}/${id}.jpg 992w, ${content.gallery.cdn.base}t_auto_hd/${content.gallery.cdn.directory}/${id}.jpg 1920w"
+                })
+                #set ( $content.gallery.assets[$id]['inlineSizes'] = "(max-width: 992px) 992px, (min-width: 993px) 1920px" )
+                #set ( $content.gallery.assets[$id]['src'] = "${content.gallery.link}/${id}.jpg" )
+                #set ( $content.gallery.assets[$id]['alt'] = $fileObject.metadata.title )
+                #set ( $content.gallery.assets[$id]['caption'] = "" )
+                #set ( $content.gallery.assets[$id]['intrinsicWidth'] = $fileObject.dimensions.width )
+                #set ( $content.gallery.assets[$id]['intrinsicHeight'] = $fileObject.dimensions.height )
+
+                ## foreach code
+            #end
+        #else
+            #set ( $content.gallery = false )
+        #end
+    #end
+    ## $dl.contentGroups[$foreach.index] = $content
+    #set ( $_temp = $dl.contentGroups.add($content) )
+    ## $foreach.index
+#end
+## DEBUG
+## <!--
+## $_SerializerTool.toJson($dl)
+## -->
+## Use protect if JSON output throws errors
+## <!--#protect
+## $_SerializerTool.toJson($dl)
+## #protect-->
+
+## Deep copy utilities
+#***
+    @param $sourceMap :: Map
+    @param $targetMap :: empty Map
+    *#
+#macro(deepCopyMap $sourceMap $targetMap)
+#foreach($entry in $sourceMap.entrySet())
+#if($_PropertyTool.isMap($entry.value))
+#set($nestedMap = {})
+#deepCopyMap($entry.value $nestedMap)
+#set( $_void = $targetMap.put($entry.key, $nestedMap) )
+#elseif($_PropertyTool.isList($entry.value))
+#set($nestedList = [])
+#deepCopyList($entry.value, $nestedList)
+#else
+#set( $_void = $targetMap.put($entry.key, $entry.value) )
+#end
+#end
+#end
+
+#***
+    @param $sourceList :: List
+    @param $targetList :: empty List
+    *#
+#macro(deepCopyList $sourceList $targetList)
+#foreach($item in $sourceList)
+#if($_PropertyTool.isMap($item))
+#set($nestedMap = {})
+#deepCopyMap($item $nestedMap)
+#set( $_void = $targetList.add($nestedMap) )
+#elseif($_PropertyTool.isList($item))
+#set($nestedList = [])
+#deepCopyList($item $nestedList)
+#else
+#set( $_void = $targetList.add($item) )
+#end
+#end
+#end
